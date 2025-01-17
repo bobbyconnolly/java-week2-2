@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Building a Better Pet Class Hierarchy</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 1rem;
+      }
+
+      h1,
+      h2,
+      h3 {
+        color: #2c3e50;
+        margin-top: 2rem;
+      }
+
+      pre {
+        background: #f8f9fa;
+        border-radius: 4px;
+        padding: 1rem;
+        overflow-x: auto;
+        border: 1px solid #e9ecef;
+        width: calc(100% - 2rem);
+      }
+
+      .keyword {
+        color: #0033b3;
+      }
+      .string {
+        color: #067d17;
+      }
+      .comment {
+        color: #8c8c8c;
+      }
+      .number {
+        color: #1750eb;
+      }
+      .type {
+        color: #000080;
+      }
+
+      .tip {
+        background: #e3f2fd;
+        padding: 1rem;
+        border-radius: 4px;
+        margin: 1rem 0;
+      }
+
+      .warning {
+        background: #fff3e0;
+        padding: 1rem;
+        border-radius: 4px;
+        margin: 1rem 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Making Our Pet Shop Code Even Better! 🎨</h1>
+
+    <p>
+      Look at our current Pet class. Notice anything strange? We're still using a <code>type</code> String, even though
+      we have specific classes for each pet type! 🤔
+    </p>
+
+    <pre><span class="keyword">public class</span> Pet {
+    <span class="keyword">private</span> String name;
+    <span class="keyword">private</span> String type;  <span class="comment">// Why do we need this anymore? 🤔</span>
+    <span class="keyword">private</span> int age;
+    <span class="keyword">private</span> String mood;</pre>
+
+    <h2>Problems with Our Current Design 🚧</h2>
+
+    <p>Our current setup has some issues:</p>
+    <ol>
+      <li>We store the type as a String, but we already have separate classes</li>
+      <li>The constructor requires a type parameter that's redundant</li>
+      <li>We might accidentally create a Dog with type "cat"!</li>
+    </ol>
+
+    <div class="warning">
+      <strong>Think About It:</strong> What would happen if we wrote this?
+      <pre>Dog confused = <span class="keyword">new</span> Dog(<span class="string">"Buddy"</span>, <span class="string">"cat"</span>, <span class="number">3</span>);</pre>
+      That doesn't make sense! A Dog should always be a "dog"! 🐕
+    </div>
+
+    <h2>Making Pet a Better Base Class</h2>
+
+    <p>Let's clean up our Pet class. Remove the type field and update the constructor:</p>
+
+    <pre><span class="keyword">public class</span> Pet {
+    <span class="keyword">private</span> String name;
+    <span class="keyword">private</span> int age;
+    <span class="keyword">private</span> String mood = <span class="string">"normal"</span>;
+    
+    <span class="comment">// Simpler constructor - no type needed!</span>
+    <span class="keyword">public</span> Pet(<span class="type">String</span> name, <span class="type">int</span> age) {
+        <span class="keyword">if</span> (name == <span class="keyword">null</span> || name.trim().isEmpty()) {
+            throw <span class="keyword">new</span> IllegalArgumentException(<span class="string">"Name cannot be empty"</span>);
+        }
+        <span class="keyword">if</span> (age < <span class="number">0</span>) {
+            throw <span class="keyword">new</span> IllegalArgumentException(<span class="string">"Age cannot be negative"</span>);
+        }
+        <span class="keyword">this</span>.name = name;
+        <span class="keyword">this</span>.age = age;
+    }
+    
+    <span class="comment">// Getters and setters</span>
+    <span class="keyword">public</span> String getName() { <span class="keyword">return</span> name; }
+    <span class="keyword">public</span> int getAge() { <span class="keyword">return</span> age; }
+    <span class="keyword">public</span> String getMood() { <span class="keyword">return</span> mood; }
+    
+    <span class="keyword">protected void</span> setMood(String mood) {
+        <span class="keyword">if</span> (mood != <span class="keyword">null</span>) {
+            <span class="keyword">this</span>.mood = mood;
+        }
+    }
+    
+    <span class="comment">// Basic pet behaviors</span>
+    <span class="keyword">public void</span> play() {
+        setMood(<span class="string">"happy"</span>);
+        System.out.println(name + <span class="string">" is playing!"</span>);
+    }
+}</pre>
+
+    <div class="tip">
+      <strong>Notice:</strong>
+      <ul>
+        <li>No more type field or type parameter</li>
+        <li>setMood is now <span class="keyword">protected</span> - only Pet and its subclasses can use it</li>
+        <li>We're using proper exception throwing for invalid data</li>
+      </ul>
+    </div>
+
+    <h2>Making makeSound Abstract! 🔊</h2>
+
+    <p>
+      Now here's something new. Every pet makes a sound, but there's no "default" sound that makes sense. Let's make Pet
+      class tell its subclasses "you MUST implement makeSound()":
+    </p>
+
+    <pre><span class="keyword">public abstract class</span> Pet {
+    <span class="comment">// ... other code stays the same ...</span>
+
+    <span class="comment">// This is an abstract method - no implementation!</span>
+    <span class="keyword">public abstract</span> String makeSound();
+}</pre>
+
+    <div class="warning">
+      <strong>New Keywords!</strong>
+      <ul>
+        <li><code>abstract class</code> means you can't create a plain Pet anymore</li>
+        <li><code>abstract method</code> means subclasses MUST implement this method</li>
+      </ul>
+    </div>
+
+    <h2>Your Turn - Update Dog Class! 🐕</h2>
+
+    <p>Now update your Dog class to work with the new Pet class:</p>
+
+    <ol>
+      <li>Remove the type parameter from super() call</li>
+      <li>Make sure makeSound is implemented</li>
+      <li>Test that everything still works</li>
+    </ol>
+
+    <p>Here's a starter template:</p>
+
+    <pre><span class="keyword">public class</span> Dog <span class="keyword">extends</span> Pet {
+    <span class="keyword">private boolean</span> knowsFetch = <span class="keyword">false</span>;
+    
+    <span class="keyword">public</span> Dog(String name, int age) {
+        <span class="comment">// TODO: Call super constructor</span>
+    }
+    
+    <span class="annotation">@Override</span>
+    <span class="keyword">public</span> String makeSound() {
+        <span class="comment">// TODO: Implement this method</span>
+    }
+    
+    <span class="comment">// ... rest of Dog class stays the same ...</span>
+}</pre>
+
+    <p>When you're done, test your changes:</p>
+
+    <pre><span class="keyword">public static void</span> main(<span class="type">String</span>[] args) {
+    <span class="comment">// This won't work anymore - Pet is abstract!</span>
+    <span class="comment">// Pet pet = new Pet("Generic", "unknown", 1);</span>
+    
+    <span class="comment">// But this works fine</span>
+    Dog buddy = <span class="keyword">new</span> Dog(<span class="string">"Buddy"</span>, <span class="number">3</span>);
+    System.out.println(buddy.getName() + <span class="string">" says: "</span> + buddy.makeSound());
+}</pre>
+
+    <h2>What We've Learned 🎓</h2>
+
+    <ul>
+      <li>Why storing type as a String isn't ideal</li>
+      <li>How to make a better base class</li>
+      <li>What abstract classes and methods are</li>
+      <li>Using protected access modifier</li>
+    </ul>
+
+    <p>Next up: We'll update the Cat class and add some other pet types! 🐱</p>
+
+    <h1>Building Our Pet Family! 🏗️</h1>
+
+    <p>
+      Now that we have a solid Pet base class and an updated Dog class, let's expand our pet shop with more pet types!
+    </p>
+
+    <h2>Updating the Cat Class 🐱</h2>
+
+    <p>Just like we did with Dog, we need to update Cat to work with our new abstract Pet class:</p>
+
+    <pre><span class="keyword">public class</span> Cat <span class="keyword">extends</span> Pet {
+    <span class="keyword">private boolean</span> hasScratchingPost = <span class="keyword">false</span>;
+    <span class="keyword">private boolean</span> inBox = <span class="keyword">false</span>;  <span class="comment">// New feature!</span>
+    
+    <span class="keyword">public</span> Cat(<span class="type">String</span> name, <span class="type">int</span> age) {
+        <span class="keyword">super</span>(name, age);
+    }
+    
+    <span class="annotation">@Override</span>
+    <span class="keyword">public</span> String makeSound() {
+        <span class="keyword">if</span> (getMood().equals(<span class="string">"happy"</span>)) {
+            <span class="keyword">return</span> <span class="string">"Purrrr!"</span>;
+        }
+        <span class="keyword">return</span> <span class="string">"Meow!"</span>;
+    }
+    
+    <span class="keyword">public void</span> giveScratchingPost() {
+        hasScratchingPost = <span class="keyword">true</span>;
+        setMood(<span class="string">"happy"</span>);
+        System.out.println(getName() + <span class="string">" loves the new scratching post!"</span>);
+    }
+    
+    <span class="keyword">public void</span> giveBox() {
+        inBox = <span class="keyword">true</span>;
+        setMood(<span class="string">"happy"</span>);
+        System.out.println(getName() + <span class="string">" jumps into the box immediately!"</span>);
+    }
+    
+    <span class="annotation">@Override</span>
+    <span class="keyword">public void</span> play() {
+        <span class="keyword">super</span>.play();  <span class="comment">// Do normal play first</span>
+        
+        <span class="keyword">if</span> (inBox) {
+            System.out.println(getName() + <span class="string">" plays peek-a-boo from the box!"</span>);
+        } <span class="keyword">else if</span> (hasScratchingPost) {
+            System.out.println(getName() + <span class="string">" scratches happily on the post!"</span>);
+        } <span class="keyword">else</span> {
+            System.out.println(getName() + <span class="string">" eyes your furniture suspiciously..."</span>);
+        }
+    }
+}</pre>
+
+    <h2>Adding a Fish Class! 🐠</h2>
+
+    <p>Time for something new! Create a Fish class with these special features:</p>
+
+    <ol>
+      <li>A tankSize field (small, medium, or large)</li>
+      <li>A waterType field (freshwater or saltwater)</li>
+      <li>Methods to change tank size and water type</li>
+    </ol>
+
+    <div class="tip">
+      <strong>Hint:</strong> For tankSize and waterType, consider using enums! Here's how to create them:
+    </div>
+
+    <pre><span class="keyword">public enum</span> TankSize {
+    SMALL, MEDIUM, LARGE
+}
+
+<span class="keyword">public enum</span> WaterType {
+    FRESHWATER, SALTWATER
+}</pre>
+
+    <p>Now create your Fish class:</p>
+
+    <pre><span class="keyword">public class</span> Fish <span class="keyword">extends</span> Pet {
+    <span class="keyword">private</span> TankSize tankSize = TankSize.SMALL;
+    <span class="keyword">private</span> WaterType waterType;
+    
+    <span class="keyword">public</span> Fish(<span class="type">String</span> name, <span class="type">int</span> age, WaterType waterType) {
+        <span class="keyword">super</span>(name, age);
+        <span class="keyword">this</span>.waterType = waterType;
+    }
+    
+    <span class="annotation">@Override</span>
+    <span class="keyword">public</span> String makeSound() {
+        <span class="keyword">return</span> <span class="string">"*blub blub*"</span>;
+    }
+    
+    <span class="keyword">public void</span> upgradeTank(TankSize newSize) {
+        <span class="keyword">if</span> (newSize.ordinal() > tankSize.ordinal()) {
+            tankSize = newSize;
+            setMood(<span class="string">"happy"</span>);
+            System.out.println(getName() + <span class="string">" loves the bigger tank!"</span>);
+        } <span class="keyword">else</span> {
+            System.out.println(getName() + <span class="string">" prefers not to downgrade!"</span>);
+        }
+    }
+    
+    <span class="annotation">@Override</span>
+    <span class="keyword">public void</span> play() {
+        <span class="keyword">super</span>.play();
+        System.out.println(getName() + <span class="string">" swims through some bubbles in their "</span> + 
+                         tankSize.toString().toLowerCase() + <span class="string">" "</span> + 
+                         waterType.toString().toLowerCase() + <span class="string">" tank!"</span>);
+    }
+}</pre>
+
+    <h2>Testing Our New Pet Types! 🧪</h2>
+
+    <p>Let's create some pets and see how they interact:</p>
+
+    <pre>Dog buddy = <span class="keyword">new</span> Dog(<span class="string">"Buddy"</span>, <span class="number">3</span>);
+Cat whiskers = <span class="keyword">new</span> Cat(<span class="string">"Whiskers"</span>, <span class="number">5</span>);
+Fish nemo = <span class="keyword">new</span> Fish(<span class="string">"Nemo"</span>, <span class="number">1</span>, WaterType.SALTWATER);
+
+<span class="comment">// Try their special features</span>
+buddy.trainFetch();
+whiskers.giveBox();
+nemo.upgradeTank(TankSize.LARGE);
+
+<span class="comment">// Make them all play</span>
+buddy.play();
+whiskers.play();
+nemo.play();</pre>
+
+    <h2>Your Turn - Practice Time! 💪</h2>
+
+    <p>Add these features to the Fish class:</p>
+
+    <ol>
+      <li>
+        Add a feed() method that:
+        <ul>
+          <li>Takes a String parameter for food type</li>
+          <li>
+            Makes the fish happy only if it's the right food for their water type
+            <ul>
+              <li>Saltwater fish like "algae" and "plankton"</li>
+              <li>Freshwater fish like "flakes" and "pellets"</li>
+            </ul>
+          </li>
+          <li>Prints an appropriate message</li>
+        </ul>
+      </li>
+      <li>
+        Override play() to check tank size:
+        <ul>
+          <li>Fish in small tanks shouldn't be too happy</li>
+          <li>Fish in large tanks should be extra playful</li>
+        </ul>
+      </li>
+    </ol>
+
+    <div class="tip">
+      <strong>Remember:</strong> You can access the mood with getMood() and change it with setMood(). These were defined
+      in the Pet class!
+    </div>
+
+    <p>Next up: We'll learn how to handle groups of different pets together! 🐾</p>
+
+    <h1>Managing All Our Pets Together! 🏰</h1>
+
+    <p>
+      Our pet shop has grown! We now have dogs, cats, and fish - each with their own special features. Let's create a
+      system to manage them all together!
+    </p>
+
+    <h2>Creating a Pet Shop Class 🏪</h2>
+
+    <p>First, let's make a class to handle our growing pet family:</p>
+
+    <pre><span class="keyword">public class</span> PetShop {
+    <span class="keyword">private</span> ArrayList&lt;Pet&gt; pets = <span class="keyword">new</span> ArrayList&lt;&gt;();
+    
+    <span class="comment">// Add a new pet to the shop</span>
+    <span class="keyword">public void</span> addPet(Pet pet) {
+        pets.add(pet);
+    }
+    
+    <span class="comment">// Remove a pet (when they get adopted)</span>
+    <span class="keyword">public void</span> removePet(Pet pet) {
+        pets.remove(pet);
+    }
+    
+    <span class="comment">// Get number of pets in the shop</span>
+    <span class="keyword">public int</span> getPetCount() {
+        <span class="keyword">return</span> pets.size();
+    }
+    
+    <span class="comment">// List all pets in the shop</span>
+    <span class="keyword">public void</span> listAllPets() {
+        <span class="keyword">if</span> (pets.isEmpty()) {
+            System.out.println(<span class="string">"The pet shop is empty!"</span>);
+            <span class="keyword">return</span>;
+        }
+        
+        System.out.println(<span class="string">"Current Pets:"</span>);
+        <span class="keyword">for</span> (Pet pet : pets) {
+            System.out.println(<span class="string">"- "</span> + pet.getName() + 
+                             <span class="string">" ("</span> + pet.getClass().getSimpleName() + 
+                             <span class="string">"), Age: "</span> + pet.getAge());
+        }
+    }
+}</pre>
+
+    <div class="tip">
+      <strong>Cool Trick:</strong> pet.getClass().getSimpleName() gives us the actual class name ("Dog", "Cat", "Fish")
+      without needing to store it ourselves! 🎩
+    </div>
+
+    <h2>Making Pets Interactive 🎮</h2>
+
+    <p>Let's add some methods to make our pet shop more lively:</p>
+
+    <pre><span class="keyword">public class</span> PetShop {
+    <span class="comment">// ... previous code remains the same ...</span>
+    
+    <span class="keyword">public void</span> playWithAll() {
+        System.out.println(<span class="string">"🎈 Play time for everyone! 🎈"</span>);
+        <span class="keyword">for</span> (Pet pet : pets) {
+            pet.play();
+        }
+    }
+    
+    <span class="keyword">public void</span> makeAllSpeak() {
+        System.out.println(<span class="string">"🔊 Pet Shop Chorus! 🔊"</span>);
+        <span class="keyword">for</span> (Pet pet : pets) {
+            System.out.println(pet.getName() + <span class="string">": "</span> + pet.makeSound());
+        }
+    }
+    
+    <span class="keyword">public void</span> trainDogs() {
+        System.out.println(<span class="string">"🦮 Dog Training Session! 🦮"</span>);
+        <span class="keyword">for</span> (Pet pet : pets) {
+            <span class="keyword">if</span> (pet <span class="keyword">instanceof</span> Dog) {
+                Dog dog = (Dog) pet;
+                dog.trainFetch();
+            }
+        }
+    }
+}</pre>
+
+    <h2>Testing Our Pet Shop! 🧪</h2>
+
+    <p>Let's see everything in action:</p>
+
+    <pre>PetShop shop = <span class="keyword">new</span> PetShop();
+
+<span class="comment">// Add some pets</span>
+shop.addPet(<span class="keyword">new</span> Dog(<span class="string">"Buddy"</span>, <span class="number">3</span>));
+shop.addPet(<span class="keyword">new</span> Cat(<span class="string">"Whiskers"</span>, <span class="number">5</span>));
+shop.addPet(<span class="keyword">new</span> Fish(<span class="string">"Nemo"</span>, <span class="number">1</span>, WaterType.SALTWATER));
+shop.addPet(<span class="keyword">new</span> Dog(<span class="string">"Max"</span>, <span class="number">2</span>));
+
+<span class="comment">// Show all our pets</span>
+shop.listAllPets();
+
+<span class="comment">// Train all dogs</span>
+shop.trainDogs();
+
+<span class="comment">// Have everyone make sounds</span>
+shop.makeAllSpeak();
+
+<span class="comment">// Play time!</span>
+shop.playWithAll();</pre>
+
+    <h2>Your Turn - Enhance the Pet Shop! 💪</h2>
+
+    <p>Add these features to the PetShop class:</p>
+
+    <ol>
+      <li>
+        getPetsByType() method that returns all pets of a specific type:
+        <pre><span class="keyword">public</span> ArrayList&lt;Pet&gt; getPetsByType(Class&lt;?&gt; type) {
+    <span class="comment">// TODO: Return all pets that match the given type</span>
+}</pre>
+      </li>
+      <li>
+        prepareFishTanks() method that:
+        <ul>
+          <li>Finds all Fish in the shop</li>
+          <li>Upgrades their tanks to LARGE</li>
+        </ul>
+      </li>
+      <li>getHappyPets() method that returns all pets in a "happy" mood</li>
+    </ol>
+
+    <h2>Final Challenge - Pet Show Competition! 🏆</h2>
+
+    <p>Create a PetShow class that can run a pet competition:</p>
+
+    <ul>
+      <li>
+        Each pet type has different tricks:
+        <ul>
+          <li>Dogs show off their fetch skills</li>
+          <li>Cats do box performances</li>
+          <li>Fish do bubble tricks</li>
+        </ul>
+      </li>
+      <li>Each trick has a success chance based on mood</li>
+      <li>Keep track of scores for each pet</li>
+      <li>Announce winners in different categories!</li>
+    </ul>
+
+    <div class="warning">
+      <strong>Think About:</strong> How can you use inheritance and polymorphism to make your code clean and easy to
+      extend for new pet types? 🤔
+    </div>
+
+    <h2>What We've Learned 🎓</h2>
+
+    <ul>
+      <li>Working with collections of different pet types</li>
+      <li>Using instanceof for type-specific operations</li>
+      <li>Managing multiple pets together</li>
+      <li>Creating complex pet interactions</li>
+      <li>Building on our inheritance knowledge</li>
+    </ul>
+
+    <p>Next time, we'll learn about interfaces and how they can make our pet shop even more flexible! 🚀</p>
+  </body>
+</html>
